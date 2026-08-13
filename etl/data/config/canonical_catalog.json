@@ -1,0 +1,453 @@
+{
+  "version": 1,
+  "fields": {
+    "companies": {
+      "description": "Named operating business entities relevant to alerts or customer profiles.",
+      "values": {
+        "solstice_robotics": {
+          "label": "Solstice Robotics",
+          "aliases": ["solstice robotics", "solstice robotics inc.", "solstice", "slrb"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Industrial automation and robotics company tracked by the sample profile."
+        },
+        "kestrel_automation": {
+          "label": "Kestrel Automation",
+          "aliases": ["kestrel automation"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Automation competitor in warehouse robotics and AI vision systems."
+        },
+        "arcworks_robotics": {
+          "label": "ArcWorks Robotics",
+          "aliases": ["arcworks robotics"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Robotics competitor in industrial automation and automotive manufacturing."
+        },
+        "vantage_motion_systems": {
+          "label": "Vantage Motion Systems",
+          "aliases": ["vantage motion systems"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Motion systems company relevant to robotics perception and vertical integration."
+        },
+        "ferrotech_alloys": {
+          "label": "Ferrotech Alloys",
+          "aliases": ["ferrotech alloys"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Specialty metals supplier relevant to rare earth magnet exposure."
+        },
+        "quanta_sensing": {
+          "label": "Quanta Sensing",
+          "aliases": ["quanta sensing"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Sensor supplier relevant to industrial automation and robotics demand."
+        },
+        "delta_servo_corp": {
+          "label": "Delta Servo Corp",
+          "aliases": ["delta servo corp", "delta servo corporation"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Servo motor supplier to industrial automation OEMs."
+        },
+        "meridian_auto_group": {
+          "label": "Meridian Auto Group",
+          "aliases": ["meridian auto group"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Automotive manufacturer customer relevant to plant automation."
+        },
+        "northline_logistics": {
+          "label": "Northline Logistics",
+          "aliases": ["northline logistics"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Logistics customer deploying warehouse automation."
+        },
+        "bayview_fulfillment": {
+          "label": "Bayview Fulfillment",
+          "aliases": ["bayview fulfillment"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Logistics and e-commerce fulfillment operator."
+        }
+      }
+    },
+    "sectors": {
+      "description": "Broad industries or business verticals affected by alerts or profiles.",
+      "values": {
+        "industrial_automation": {
+          "label": "Industrial Automation",
+          "aliases": ["industrial automation", "automation"],
+          "related_terms": ["capital-intensive automation sectors"],
+          "law_or_regime_aliases": [],
+          "exclude": ["warehouse automation"],
+          "description": "Broad industrial automation sector."
+        },
+        "industrial_robotics": {
+          "label": "Industrial Robotics",
+          "aliases": ["industrial robotics", "robotics", "industrial robotics systems"],
+          "related_terms": ["robotics oems"],
+          "law_or_regime_aliases": [],
+          "exclude": ["robotics components", "warehouse robotics"],
+          "description": "Broad robotics sector focused on industrial systems."
+        },
+        "manufacturing": {
+          "label": "Manufacturing",
+          "aliases": ["manufacturing"],
+          "related_terms": ["manufacturers"],
+          "law_or_regime_aliases": [],
+          "exclude": ["automotive manufacturing"],
+          "description": "General manufacturing sector."
+        },
+        "logistics": {
+          "label": "Logistics",
+          "aliases": ["logistics"],
+          "related_terms": ["distribution centers", "fulfillment operators"],
+          "law_or_regime_aliases": [],
+          "exclude": ["ecommerce fulfillment", "warehouse automation"],
+          "description": "Logistics and distribution sector."
+        },
+        "semiconductors": {
+          "label": "Semiconductors",
+          "aliases": ["semiconductors", "semiconductor"],
+          "related_terms": ["fabs", "chip shortage"],
+          "law_or_regime_aliases": [],
+          "exclude": ["control chips"],
+          "description": "Semiconductor manufacturing and supply sector."
+        }
+      }
+    },
+    "geo_markets": {
+      "description": "Countries, regions, or trade areas materially connected to alerts or profiles.",
+      "values": {
+        "germany": {
+          "label": "Germany",
+          "aliases": ["germany"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Germany as a geographic market or supply source."
+        },
+        "south_korea": {
+          "label": "South Korea",
+          "aliases": ["south korea", "korea"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "South Korea as a geographic market or supply source."
+        },
+        "mexico": {
+          "label": "Mexico",
+          "aliases": ["mexico"],
+          "related_terms": ["monterrey"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Mexico as a geographic market or manufacturing location."
+        },
+        "united_states": {
+          "label": "United States",
+          "aliases": ["united states", "us", "u.s.", "usa"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["north america"],
+          "description": "United States as a geographic market."
+        },
+        "north_america": {
+          "label": "North America",
+          "aliases": ["north america", "north american"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["united states"],
+          "description": "North America as a region."
+        },
+        "europe": {
+          "label": "Europe",
+          "aliases": ["europe", "european"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["european_union"],
+          "description": "Europe as a geographic region outside strict EU membership semantics."
+        },
+        "european_union": {
+          "label": "European Union",
+          "aliases": ["european union", "eu"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["europe"],
+          "description": "European Union as a political and regulatory market."
+        },
+        "vietnam": {
+          "label": "Vietnam",
+          "aliases": ["vietnam"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Vietnam as a geographic market or supplier location."
+        },
+        "asia": {
+          "label": "Asia",
+          "aliases": ["asia"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Asia as a broad region."
+        }
+      }
+    },
+    "key_markets": {
+      "description": "Product, end, customer, application, or demand markets affected by alerts or profiles.",
+      "values": {
+        "warehouse_automation": {
+          "label": "Warehouse Automation",
+          "aliases": ["warehouse automation", "warehouse robotics", "automated warehousing", "automated warehouse systems"],
+          "related_terms": ["picking arms", "distribution centers"],
+          "law_or_regime_aliases": [],
+          "exclude": ["logistics"],
+          "description": "Automation systems and robotics used in warehouse operations."
+        },
+        "ecommerce_fulfillment": {
+          "label": "E-commerce Fulfillment",
+          "aliases": ["e-commerce fulfillment", "ecommerce fulfillment", "fulfillment"],
+          "related_terms": ["same-day delivery"],
+          "law_or_regime_aliases": [],
+          "exclude": ["logistics"],
+          "description": "Fulfillment operations serving e-commerce demand."
+        },
+        "automotive_manufacturing": {
+          "label": "Automotive Manufacturing",
+          "aliases": ["automotive manufacturing", "automotive applications"],
+          "related_terms": ["auto plants", "assembly lines"],
+          "law_or_regime_aliases": [],
+          "exclude": ["manufacturing"],
+          "description": "Automotive production and manufacturing applications."
+        },
+        "industrial_automation_oems": {
+          "label": "Industrial Automation OEMs",
+          "aliases": ["industrial automation oems", "automation oems"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["industrial_automation"],
+          "description": "Original equipment manufacturers in industrial automation."
+        },
+        "robotics_components": {
+          "label": "Robotics Components",
+          "aliases": ["robotics components", "advanced robotics components"],
+          "related_terms": ["structural robot housings", "servo-driven arm assembly"],
+          "law_or_regime_aliases": [],
+          "exclude": ["industrial_robotics"],
+          "description": "Component market serving robotics systems."
+        },
+        "control_chips": {
+          "label": "Control Chips",
+          "aliases": ["control chips"],
+          "related_terms": ["semiconductor chips"],
+          "law_or_regime_aliases": [],
+          "exclude": ["semiconductors"],
+          "description": "Control chips used by automation and robotics OEMs."
+        }
+      }
+    },
+    "commodities": {
+      "description": "Raw materials, traded goods, and physical inputs whose supply, cost, or availability matters.",
+      "values": {
+        "rare_earth_magnets": {
+          "label": "Rare Earth Magnets",
+          "aliases": ["rare earth magnets", "rare-earth magnets"],
+          "related_terms": ["magnet prices"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Rare earth magnets used in robotics and EV motors."
+        },
+        "semiconductor_chips": {
+          "label": "Semiconductor Chips",
+          "aliases": ["semiconductor chips", "chips"],
+          "related_terms": ["chip shortage"],
+          "law_or_regime_aliases": [],
+          "exclude": ["semiconductors"],
+          "description": "Semiconductor chip inputs."
+        },
+        "precision_bearings": {
+          "label": "Precision Bearings",
+          "aliases": ["precision bearings"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Precision bearing inputs used in industrial components."
+        }
+      }
+    },
+    "regulators": {
+      "description": "Regulatory bodies or agencies. Laws and regimes may map to responsible regulator entities only when explicitly configured.",
+      "values": {
+        "us_department_of_commerce": {
+          "label": "US Department of Commerce",
+          "aliases": ["us department of commerce", "u.s. department of commerce", "department of commerce", "commerce department"],
+          "related_terms": ["export controls", "export control rules"],
+          "law_or_regime_aliases": ["us export controls", "u.s. export controls"],
+          "exclude": ["cfius"],
+          "description": "US department responsible for export control actions in the sample alerts."
+        },
+        "cfius": {
+          "label": "CFIUS",
+          "aliases": ["cfius", "committee on foreign investment in the united states"],
+          "related_terms": ["foreign investment review", "national security review"],
+          "law_or_regime_aliases": ["cfius review"],
+          "exclude": ["us_department_of_commerce"],
+          "description": "US interagency committee reviewing foreign investment for national security concerns."
+        },
+        "federal_reserve": {
+          "label": "Federal Reserve",
+          "aliases": ["fed", "federal reserve", "federal reserve system"],
+          "related_terms": ["rate cuts", "monetary policy", "interest rates"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "US central bank responsible for monetary policy."
+        },
+        "european_commission": {
+          "label": "European Commission",
+          "aliases": ["european commission", "ec", "european regulators"],
+          "related_terms": ["conformity assessments", "ai enforcement guidance"],
+          "law_or_regime_aliases": ["eu ai act", "european union artificial intelligence act"],
+          "exclude": ["european_union"],
+          "description": "EU executive and regulatory body associated with AI Act implementation and enforcement guidance."
+        }
+      }
+    },
+    "macro_sensitivities": {
+      "description": "Broad economic or geopolitical drivers affecting valuation, demand, margins, financing, or supply chains.",
+      "values": {
+        "interest_rates": {
+          "label": "Interest Rates",
+          "aliases": ["interest rates", "rate cuts", "borrowing costs", "financing conditions"],
+          "related_terms": ["monetary easing"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Interest-rate and financing-condition exposure."
+        },
+        "reshoring": {
+          "label": "Reshoring",
+          "aliases": ["reshoring", "reshoring momentum", "reshored plants"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": ["nearshoring"],
+          "description": "Movement of production back to the domestic market."
+        },
+        "tariffs": {
+          "label": "Tariffs",
+          "aliases": ["tariffs", "tariff uncertainty"],
+          "related_terms": ["trade restrictions"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Tariff and import-duty exposure."
+        },
+        "labor_costs": {
+          "label": "Labor Costs",
+          "aliases": ["labor costs", "labor cost pressure", "wage inflation", "tight labor markets"],
+          "related_terms": ["labor shortage"],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Wage, hiring, and labor-cost exposure."
+        },
+        "geopolitical_risk": {
+          "label": "Geopolitical Risk",
+          "aliases": ["geopolitical risk", "trade tensions", "export restrictions"],
+          "related_terms": ["national security concerns"],
+          "law_or_regime_aliases": [],
+          "exclude": ["tariffs"],
+          "description": "Geopolitical and cross-border policy exposure."
+        },
+        "trade_policy": {
+          "label": "Trade Policy",
+          "aliases": ["trade policy", "trade restrictions"],
+          "related_terms": ["export controls"],
+          "law_or_regime_aliases": [],
+          "exclude": ["tariffs"],
+          "description": "Trade policy and restriction exposure."
+        }
+      }
+    },
+    "themes": {
+      "description": "Strategic or investment themes explaining why alerts matter across companies or markets.",
+      "values": {
+        "ai_driven_automation": {
+          "label": "AI-driven Automation",
+          "aliases": ["ai-driven automation", "ai powered automation", "ai-powered automation", "ai-enabled automation"],
+          "related_terms": ["ai vision system"],
+          "law_or_regime_aliases": [],
+          "exclude": ["automation_adoption"],
+          "description": "Automation specifically enabled or differentiated by AI capabilities."
+        },
+        "automation_adoption": {
+          "label": "Automation Adoption",
+          "aliases": ["automation adoption", "automation", "plant automation"],
+          "related_terms": ["automating assembly lines"],
+          "law_or_regime_aliases": [],
+          "exclude": ["ai_driven_automation"],
+          "description": "Broad adoption of automation technologies."
+        },
+        "labor_shortage": {
+          "label": "Labor Shortage",
+          "aliases": ["labor shortage", "tight labor markets"],
+          "related_terms": ["difficulty filling roles"],
+          "law_or_regime_aliases": [],
+          "exclude": ["labor_costs"],
+          "description": "Structural labor availability constraints."
+        },
+        "productivity_gains": {
+          "label": "Productivity Gains",
+          "aliases": ["productivity gains", "faster pick rates"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Efficiency or productivity improvement theme."
+        },
+        "vertical_integration": {
+          "label": "Vertical Integration",
+          "aliases": ["vertical integration", "bring technology in-house", "bringing perception technology in-house"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Strategic integration of upstream or downstream capabilities."
+        },
+        "nearshoring": {
+          "label": "Nearshoring",
+          "aliases": ["nearshoring", "nearshoring capacity"],
+          "related_terms": ["north american customer base"],
+          "law_or_regime_aliases": [],
+          "exclude": ["reshoring"],
+          "description": "Moving production closer to end markets."
+        },
+        "supply_chain_diversification": {
+          "label": "Supply Chain Diversification",
+          "aliases": ["supply chain diversification", "supplier diversification", "diversify supplier base", "production diversification"],
+          "related_terms": [],
+          "law_or_regime_aliases": [],
+          "exclude": [],
+          "description": "Diversifying suppliers, sites, or production footprints."
+        },
+        "supply_chain_resilience": {
+          "label": "Supply Chain Resilience",
+          "aliases": ["supply chain resilience", "supply chain disruption"],
+          "related_terms": ["capacity constraints", "lead times"],
+          "law_or_regime_aliases": [],
+          "exclude": ["supply_chain_diversification"],
+          "description": "Supply chain risk, disruption, or resilience theme."
+        }
+      }
+    }
+  }
+}

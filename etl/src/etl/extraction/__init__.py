@@ -1,0 +1,1 @@
+"""Alert metadata extraction package."""
