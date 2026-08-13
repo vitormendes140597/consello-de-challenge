@@ -12,10 +12,12 @@ from langchain_core.messages import AIMessage, BaseMessage
 from ai_alert_scorer.agent import (
     AlertRelevanceSession,
     build_chat_model,
+    is_alert_followup_request,
     is_alert_request,
     resolve_request_top_n,
 )
 from ai_alert_scorer.config import AlertRelevanceConfig, OpenAIModelConfig
+from ai_alert_scorer.scoring import SUMMARY_MIN_SCORE
 from ai_alert_scorer.tools import build_alert_toolset, decode_tool_payload, tool_names
 
 
@@ -170,6 +172,56 @@ def _absolute_boundary_config(tmp_path: Path) -> AlertRelevanceConfig:
     )
 
 
+def _followup_omitted_alert_config(tmp_path: Path) -> AlertRelevanceConfig:
+    """Build config with one returned alert and one omitted eligible alert.
+
+    Args:
+        tmp_path (Path): Temporary directory.
+
+    Returns:
+        AlertRelevanceConfig: Test configuration with ``top_n`` set to one.
+    """
+
+    alerts_path = tmp_path / "followup-alerts.json"
+    client_path = tmp_path / "followup-client.json"
+    alerts_path.write_text(
+        json.dumps(
+            [
+                _alert_record(
+                    alert_id="high",
+                    received_at="2026-08-09T09:00:00Z",
+                    subject="Solstice Robotics raises revenue guidance",
+                    canonical_company="solstice_robotics",
+                ),
+                {
+                    "id": "coffee",
+                    "received_at": "2026-08-09T09:00:00Z",
+                    "subject": "Regional Coffee Chain Expands to 200 New Locations",
+                    "body": (
+                        "A regional coffee chain announced plans to open 200 "
+                        "new locations."
+                    ),
+                    "companies": [],
+                    "sectors": [],
+                    "geo_markets": [],
+                    "key_markets": [],
+                    "commodities": [],
+                    "regulators": [],
+                    "macro_sensitivities": [],
+                    "themes": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    client_path.write_text(json.dumps(_client_record()), encoding="utf-8")
+    return AlertRelevanceConfig(
+        canonical_alerts_path=alerts_path,
+        canonical_client_profile_path=client_path,
+        top_n=1,
+    )
+
+
 def _alert_record(
     alert_id: str,
     received_at: str,
@@ -279,6 +331,20 @@ def test_alert_request_detects_absolute_date_range_followup() -> None:
     )
 
 
+def test_alert_followup_detects_named_alert_question() -> None:
+    """Verify named-alert follow-ups can reuse the previous alert context."""
+
+    assert is_alert_followup_request(
+        "how about Regional Coffee Chain Expands to 200 New Locations"
+    )
+
+
+def test_alert_followup_detects_top_n_request_without_news_keyword() -> None:
+    """Verify short top-N follow-ups can reuse the previous alert context."""
+
+    assert is_alert_followup_request("show me the top 10 now")
+
+
 def test_resolve_request_top_n_uses_prompt_override() -> None:
     """Verify per-request ``top N`` overrides the configured default."""
 
@@ -380,7 +446,7 @@ def test_rank_alerts_tool_returns_structured_top_results(tmp_path: Path) -> None
 
     assert payload["ok"] is True
     assert payload["top_n"] == 1
-    assert payload["minimum_summary_score"] == 30.0
+    assert payload["minimum_summary_score"] == SUMMARY_MIN_SCORE
     assert payload["ranked_alerts"][0]["rank"] == 1
     assert payload["ranked_alerts"][0]["alert_id"] == "a01"
     assert payload["ranked_alerts"][0]["evidence"]
@@ -461,7 +527,7 @@ def test_session_runs_explicit_pipeline_with_default_range(tmp_path: Path) -> No
 def test_session_keeps_low_score_alerts_out_of_summary_context(
     tmp_path: Path,
 ) -> None:
-    """Verify sub-30 alerts remain rank evidence but not summary material."""
+    """Verify low-score alerts remain rank evidence but not summary material."""
 
     model = FakeAnswerModel()
     session = AlertRelevanceSession(
@@ -473,9 +539,9 @@ def test_session_keeps_low_score_alerts_out_of_summary_context(
     result = session.run_turn("top alerts for Solstice Robotics")
 
     assert [alert.alert_id for alert in result.ranked_alerts] == ["high", "low"]
-    assert result.ranked_alerts[1].final_score < 30
+    assert result.ranked_alerts[1].final_score < SUMMARY_MIN_SCORE
     context = json.loads(model.calls[0]["messages"][-1].content)
-    assert context["minimum_summary_score"] == 30.0
+    assert context["minimum_summary_score"] == SUMMARY_MIN_SCORE
     assert [alert["alert_id"] for alert in context["ranked_alerts"]] == [
         "high",
         "low",
@@ -484,6 +550,65 @@ def test_session_keeps_low_score_alerts_out_of_summary_context(
     assert [alert["alert_id"] for alert in context["rank_evidence_only_alerts"]] == [
         "low"
     ]
+
+
+def test_session_followup_reuses_previous_date_range_and_top_n(
+    tmp_path: Path,
+) -> None:
+    """Verify short top-N follow-ups reuse the last alert date range."""
+
+    model = FakeAnswerModel()
+    session = AlertRelevanceSession(
+        config=_followup_omitted_alert_config(tmp_path),
+        model=model,
+        clock=lambda: datetime(2026, 8, 13, 12, 0, tzinfo=UTC),
+    )
+
+    first = session.run_turn("top alerts from 2026-08-01 to 2026-08-09")
+    second = session.run_turn("show me the top 2 now")
+
+    assert first.date_range is not None
+    assert second.date_range is not None
+    assert second.date_range == first.date_range
+    assert [alert.alert_id for alert in second.ranked_alerts] == ["high", "coffee"]
+    context = json.loads(model.calls[-1]["messages"][-1].content)
+    assert context["top_n"] == 2
+    assert context["eligible_alert_count"] == 2
+    assert context["additional_ranked_alerts"] == []
+
+
+def test_session_followup_includes_named_alert_outside_top_n(
+    tmp_path: Path,
+) -> None:
+    """Verify named follow-ups can explain eligible alerts outside top-N."""
+
+    model = FakeAnswerModel()
+    session = AlertRelevanceSession(
+        config=_followup_omitted_alert_config(tmp_path),
+        model=model,
+        clock=lambda: datetime(2026, 8, 13, 12, 0, tzinfo=UTC),
+    )
+
+    session.run_turn("top alerts from 2026-08-01 to 2026-08-09")
+    result = session.run_turn(
+        "how about Regional Coffee Chain Expands to 200 New Locations"
+    )
+
+    assert result.date_range is not None
+    assert result.date_range.label == "explicit date range"
+    assert [event.name for event in result.tool_events] == [
+        "read_canonical_client",
+        "read_canonical_alerts",
+        "rank_alerts_for_client",
+    ]
+    assert [alert.alert_id for alert in result.ranked_alerts] == ["high"]
+    context = json.loads(model.calls[-1]["messages"][-1].content)
+    assert context["top_n"] == 1
+    assert [alert["alert_id"] for alert in context["ranked_alerts"]] == ["high"]
+    assert [alert["alert_id"] for alert in context["additional_ranked_alerts"]] == [
+        "coffee"
+    ]
+    assert context["additional_ranked_alerts"][0]["rank"] == 2
 
 
 def test_session_uses_explicit_date_only_range(tmp_path: Path) -> None:

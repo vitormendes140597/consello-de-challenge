@@ -37,6 +37,8 @@ combination, and recency signals. Expected future improvements include a larger
 canonical catalog, better pipeline observability, visual run examples, and a
 richer conversational scoring experience.
 
+![](docs/image.png)
+
 ## Structure
 
 Representative directory tree, with local environments, caches, `.env`, and

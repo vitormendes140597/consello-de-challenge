@@ -49,8 +49,12 @@ DEVELOPER_INSTRUCTIONS = (
     "not invent scores, ranks, alert IDs, or evidence. Use summary_alerts, not "
     "ranked_alerts, for the final summary. Alerts with final_score below "
     "minimum_summary_score are rank evidence only and must not be summarized as "
-    "key alerts. If no summary_alerts are provided, state that no alerts met "
-    "the 30-point summary threshold for the applied date range. If no ranked "
+    "key alerts. Use additional_ranked_alerts only to answer explicit follow-up "
+    "questions about eligible alerts that were outside the returned top-N list. "
+    "If an alert is in additional_ranked_alerts, say it was eligible for the "
+    "date range but outside the requested top-N, and use its provided rank, "
+    "score, and evidence. If no summary_alerts are provided, state that no "
+    "alerts met minimum_summary_score for the applied date range. If no ranked "
     "alerts are provided, state that no alerts were found for the applied date "
     "range. If the default date range was used, explicitly say it used the "
     "last 3 days by default."
@@ -82,6 +86,13 @@ DATE_RANGE_FOLLOWUP_PATTERN = re.compile(
     re.IGNORECASE,
 )
 TOP_N_PATTERN = re.compile(r"\btop\s+(\d+)\b", re.IGNORECASE)
+ALERT_FOLLOWUP_PATTERNS = (
+    re.compile(r"\b(?:show|list|get|give\s+me)\b.+\btop\s+\d+\b", re.IGNORECASE),
+    re.compile(r"\b(?:how|what)\s+about\b.+", re.IGNORECASE),
+    re.compile(r"\bwhere\s+(?:is|was)\b.+", re.IGNORECASE),
+    re.compile(r"\bdid\s+you\b.+\binclude\b.+", re.IGNORECASE),
+    re.compile(r"\bwhy\b.+\b(?:not|only|showing|shown|missing)\b.+", re.IGNORECASE),
+)
 MULTI_CLIENT_PATTERNS = (
     re.compile(r"\bmultiple\s+clients\b", re.IGNORECASE),
     re.compile(r"\bcompare\b.+\bclients?\b", re.IGNORECASE),
@@ -147,6 +158,21 @@ class ChatTurnResult:
     asked_for_client_clarification: bool = False
 
 
+@dataclass(frozen=True)
+class _PreviousAlertRequest:
+    """Alert-ranking context available for follow-up turns.
+
+    Attributes:
+        date_range (AlertDateRange): Last applied alert date range.
+        used_default_date_range (bool): Whether the last range was the default.
+        top_n (int): Last requested top-N result count.
+    """
+
+    date_range: AlertDateRange
+    used_default_date_range: bool
+    top_n: int
+
+
 class AlertRelevanceSession:
     """Stateful alert relevance chat session with an explicit PoC pipeline."""
 
@@ -184,6 +210,7 @@ class AlertRelevanceSession:
             ChatMessage(role="developer", content=DEVELOPER_INSTRUCTIONS),
         ]
         self._previous_response_id: str | None = None
+        self._previous_alert_request: _PreviousAlertRequest | None = None
 
     @property
     def messages(self) -> list[BaseMessage]:
@@ -205,7 +232,11 @@ class AlertRelevanceSession:
             ChatTurnResult: Assistant text and renderable artifacts.
         """
 
-        if not is_alert_request(user_input):
+        is_followup_request = (
+            self._previous_alert_request is not None
+            and is_alert_followup_request(user_input)
+        )
+        if not is_alert_request(user_input) and not is_followup_request:
             human_message = HumanMessage(content=user_input)
             self._messages.append(human_message)
             ai_message = self._invoke_model(self._messages)
@@ -232,21 +263,33 @@ class AlertRelevanceSession:
                 user_input,
                 now=time_anchor,
             )
-            top_n = resolve_request_top_n(user_input, self._config.top_n)
+            date_range = resolution.date_range
+            used_default = resolution.used_default
+            previous_request = self._previous_alert_request
+            if is_followup_request and resolution.used_default and previous_request:
+                date_range = previous_request.date_range
+                used_default = previous_request.used_default_date_range
+            default_top_n = (
+                previous_request.top_n
+                if is_followup_request and previous_request is not None
+                else self._config.top_n
+            )
+            top_n = resolve_request_top_n(user_input, default_top_n)
             client = self._loader.load_client_profile(
                 self._config.canonical_client_profile_path
             )
             alerts = self._loader.load_alerts_for_date_range(
                 path=self._config.canonical_alerts_path,
-                date_range=resolution.date_range,
+                date_range=date_range,
             )
-            ranked_alerts = rank_alerts_for_client(
+            all_ranked_alerts = rank_alerts_for_client(
                 alerts=alerts,
                 client=client,
-                date_range=resolution.date_range,
-                top_n=top_n,
+                date_range=date_range,
+                top_n=max(top_n, len(alerts)),
                 scored_at=time_anchor,
             )
+            ranked_alerts = all_ranked_alerts[:top_n]
         except (AlertDateRangeError, CanonicalDataLoadError, ValueError) as exc:
             return ChatTurnResult(assistant_message=str(exc))
 
@@ -259,7 +302,7 @@ class AlertRelevanceSession:
             ToolEvent(
                 name="read_canonical_alerts",
                 ok=True,
-                message=_loaded_alerts_message(len(alerts), resolution.date_range),
+                message=_loaded_alerts_message(len(alerts), date_range),
             ),
             ToolEvent(
                 name="rank_alerts_for_client",
@@ -271,23 +314,29 @@ class AlertRelevanceSession:
         context_message = ChatMessage(
             role="developer",
             content=_response_context(
-                date_range=resolution.date_range,
-                used_default=resolution.used_default,
+                date_range=date_range,
+                used_default=used_default,
                 top_n=top_n,
                 ranked_alerts=ranked_alerts,
+                all_ranked_alerts=all_ranked_alerts,
             ),
         )
         ai_message = self._invoke_model([*self._messages, context_message])
         self._messages.append(context_message)
         self._messages.append(ai_message)
         self._remember_response_id(ai_message)
+        self._previous_alert_request = _PreviousAlertRequest(
+            date_range=date_range,
+            used_default_date_range=used_default,
+            top_n=top_n,
+        )
 
         return ChatTurnResult(
             assistant_message=_message_text(ai_message),
             tool_events=tool_events,
             ranked_alerts=ranked_alerts,
-            date_range=resolution.date_range,
-            used_default_date_range=resolution.used_default,
+            date_range=date_range,
+            used_default_date_range=used_default,
         )
 
     def _invoke_model(self, messages: Sequence[BaseMessage]) -> AIMessage:
@@ -359,6 +408,23 @@ def is_alert_request(user_input: str) -> bool:
     )
 
 
+def is_alert_followup_request(user_input: str) -> bool:
+    """Detect follow-up turns that refer to the previous alert result set.
+
+    Args:
+        user_input (str): User prompt.
+
+    Returns:
+        bool: ``True`` when a previous alert query should be reused for date
+        range context.
+    """
+
+    normalized = user_input.strip()
+    if not normalized:
+        return False
+    return any(pattern.search(normalized) for pattern in ALERT_FOLLOWUP_PATTERNS)
+
+
 def resolve_request_top_n(user_input: str, default_top_n: int) -> int:
     """Resolve an optional ``top N`` override from a user request.
 
@@ -398,19 +464,30 @@ def _response_context(
     used_default: bool,
     top_n: int,
     ranked_alerts: list[RankedAlertResult],
+    all_ranked_alerts: list[RankedAlertResult],
 ) -> str:
+    additional_ranked_alerts = [
+        result for result in all_ranked_alerts if result.rank > top_n
+    ]
     payload = {
         "instruction": (
             "Answer final summaries from summary_alerts only. ranked_alerts "
-            "are rank evidence and may include alerts below the summary "
-            "threshold. Mention the default last-3-days window if "
-            "used_default_date_range is true."
+            "are the returned top-N results and may include alerts below the "
+            "summary threshold. additional_ranked_alerts are eligible alerts "
+            "outside the returned top-N; use them only for explicit follow-up "
+            "questions about missing or named alerts. Mention the default "
+            "last-3-days window if used_default_date_range is true."
         ),
         "top_n": top_n,
         "minimum_summary_score": SUMMARY_MIN_SCORE,
+        "eligible_alert_count": len(all_ranked_alerts),
+        "returned_rank_count": len(ranked_alerts),
         "date_range": date_range.model_payload(),
         "used_default_date_range": used_default,
         "ranked_alerts": [result.model_dump() for result in ranked_alerts],
+        "additional_ranked_alerts": [
+            result.model_dump() for result in additional_ranked_alerts
+        ],
         "summary_alerts": [
             result.model_dump()
             for result in ranked_alerts
@@ -452,6 +529,7 @@ __all__ = [
     "SYSTEM_INSTRUCTIONS",
     "ToolEvent",
     "build_chat_model",
+    "is_alert_followup_request",
     "is_alert_request",
     "is_exit_command",
     "resolve_request_top_n",
