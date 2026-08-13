@@ -21,7 +21,7 @@ DEFAULT_CANONICAL_CLIENT_PROFILE_PATH = (
     / "etl"
     / "data"
     / "processed"
-    / "canonicalized_client2_profile.json"
+    / "canonicalized_client_profile.json"
 )
 DEFAULT_TOP_N = 5
 ALERT_RELEVANCE_MODEL_ENV = "ALERT_RELEVANCE_MODEL"
